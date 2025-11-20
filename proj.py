@@ -1,5 +1,6 @@
 import pygame
 from pygame.locals import *
+import pickle
 
 pygame.init()
 
@@ -11,6 +12,9 @@ screen_width = 800
 screen_height = 800
 tile_size = screen_height/20
 game_over = 0
+main_menu = True
+level = 1
+
 
 screen =  pygame.display.set_mode((screen_width, screen_height)) #makes screen
 pygame.display.set_caption('67platformer67')  #name for the screen in the top header bar
@@ -85,7 +89,7 @@ class Player():
             #3. adjust player position
            
             self.in_air = True
-            for tile in world1.tile_list:
+            for tile in worldCurrent.tile_list:
                 #check for collision in x direction
                 if tile[1].colliderect(self.rect.x +dx, self.rect.y,self.width,self.height):    
                     dx = 0
@@ -227,28 +231,10 @@ class Spike(pygame.sprite.Sprite):
 
 
 #blueprint for making world, every 1 will be a block and it matches 10x10 grid
-world1_data = [
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #1
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #2
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #3
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #4
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #5
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #6
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #7
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #8
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #9
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #10
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #11
-    [0,2,0,2,2,2,2,0,2,4,0,4,0,4,2,0,0,0,0,0], #12
-    [0,2,0,0,0,0,0,0,2,2,2,2,2,2,2,0,0,0,0,0], #13
-    [0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #14
-    [0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #15
-    [0,0,2,0,0,3,0,0,0,0,0,0,0,0,2,2,2,0,0,2], #16
-    [0,0,0,0,2,2,2,0,0,0,0,0,0,0,0,0,0,0,2,0], #17
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0], #18
-    [0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,2,0,0,0], #19
-    [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2], #20
-]
+worldAsFile = open(f"level{level}_data.text")
+world_data = [worldAsFile.read()]
+print(worldAsFile)
+print(worldAsFile.read())
 
 world2_data = [
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #1
@@ -276,18 +262,25 @@ world2_data = [
 #load images
 sky_img = pygame.image.load('img/placeholder.jpg') #looks for img folder inside of open folder and inside of img folder looks for placeholder.jpg
 restart_img = pygame.image.load("img/restart.png")
+start_img = pygame.image.load("img/start_btn.png")
+exit_img = pygame.image.load("img/exit_btn.png")
 
 player = Player(100,screen_height - 160)
 spike_group = pygame.sprite.Group()
 blob_group = pygame.sprite.Group()
 
+#load  in level data and create world
+#pickle_in = open(f'level{level}_data.text')
+#world_data = pickle.load(pickle_in)
 
-world1 = World(world1_data)
+worldCurrent = World(world_data)
 
-world2 = World(world2_data)
+#world2 = World(world2_data)
 
 #create buttons
 restart_button = Button(screen_width//2 -50, screen_height//2 + 100, restart_img) 
+start_button = Button(screen_width//2 -250, screen_height//2 + 100, start_img)
+exit_button = Button(screen_width//2 +150, screen_height//2 + 100, exit_img)
 
 
 run = True
@@ -297,27 +290,32 @@ while run: #runs game
     #draws loaded images
     #order images drawn matter because a larger image can cover a smaller image if smaller image is loaded first
     screen.blit(sky_img, (0,0))
+    if main_menu:
+        if exit_button.draw() == True:
+            run = False
+        if start_button.draw():
+            main_menu = False
+    else:
+        
+        worldCurrent.draw()
 
-    #draw_grid()
-    world1.draw()
+        if game_over == 0:
+            blob_group.update() #moves enemies
 
-    if game_over == 0:
-        blob_group.update() #moves enemies
+        blob_group.draw(screen)
+        spike_group.draw(screen)
 
-    blob_group.draw(screen)
-    spike_group.draw(screen)
+        #game over is a global var so it can't easily be accesed in a function cause it will look for a local var by name
+        #of game_over which doesnt exist so the player update function, takes game_over as an input so that the same game_over
+        #can be used as both a local and global variable with respect to the player update function
+        #the update function then returns the game_over variable to allow the global game_over variable to be changed by the 
+        #local game_over var that is created in update function
+        game_over = player.update(game_over)
 
-    #game over is a global var so it can't easily be accesed in a function cause it will look for a local var by name
-    #of game_over which doesnt exist so the player update function, takes game_over as an input so that the same game_over
-    #can be used as both a local and global variable with respect to the player update function
-    #the update function then returns the game_over variable to allow the global game_over variable to be changed by the 
-    #local game_over var that is created in update function
-    game_over = player.update(game_over)
-
-    if game_over == -1:
-        if restart_button.draw():
-            player.reset(100,screen_height-130)
-            game_over = 0
+        if game_over == -1:
+            if restart_button.draw():
+                player.reset(100,screen_height-130)
+                game_over = 0
 
     for event in pygame.event.get(): 
         if event.type == pygame.QUIT: #looking for when you press 'x' in top right of window to close it
