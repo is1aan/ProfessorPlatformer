@@ -55,7 +55,6 @@ class Player():
     def __init__(self,x,y):
         self.reset(x,y)
  
-
     def update(self, game_over):
         
         dx = 0
@@ -118,12 +117,15 @@ class Player():
                     self.jumped = False
 
             #check for collision with enemies 
+         
+            
             if pygame.sprite.spritecollide(self, blob_group, False):
                 game_over = -1 
 
                 #check for collision with spike
             if pygame.sprite.spritecollide(self, spike_group, False):
                 game_over = -1 
+
         elif game_over == -1:
             self.image = self.dead_image
             
@@ -203,7 +205,6 @@ class Enemy(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         Eimg = pygame.image.load('img/enemy.jpg')
         
-      
         self.image = pygame.transform.scale(Eimg, (tile_size, tile_size))
         self.rect= self.image.get_rect()
         self.rect.x = x
@@ -218,20 +219,21 @@ class Enemy(pygame.sprite.Sprite):
             self.move_direction *= -1
             self.move_counter *= -1
 
+
 class Spike(pygame.sprite.Sprite):
     def __init__(self, x,y):
         pygame.sprite.Sprite.__init__(self)
         Eimg = pygame.image.load('img/spike.png')
         
-        self.image = pygame.transform.scale(Eimg, (tile_size, tile_size))
+        self.image = pygame.transform.scale(Eimg, (tile_size-10, tile_size-10))
         self.rect= self.image.get_rect()
         self.rect.x = x
-        self.rect.y = y
+        self.rect.y = y + 10
        
 
 
 #blueprint for making world, every 1 will be a block and it matches 10x10 grid
-worldAsFile = open(f"level{level}_data.text")
+worldAsFile = open(f"level{level}_data.txt")
 world_data = [worldAsFile.read()]
 print(worldAsFile)
 print(worldAsFile.read())
@@ -255,7 +257,7 @@ world2_data = [
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2], #16
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0], #17
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0], #18
-    [0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,2,0,0,0], #19
+    [0,0,0,0,0,0,0,4,0,0,3,0,0,0,0,0,2,0,0,0], #19
     [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2], #20
 ]
 world3_data = [
