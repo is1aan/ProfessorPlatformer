@@ -124,8 +124,9 @@ class Player():
 
                 #check for collision with spike
             if pygame.sprite.spritecollide(self, spike_group, False):
-                game_over = -1 
-
+                game_over = -1
+            if pygame.sprite.spritecollide(self, flyer1_group, False):
+                game_over = -1      
         elif game_over == -1:
             self.image = self.dead_image
             
@@ -192,6 +193,10 @@ class World():
                 if tile == 4: #spike
                     spike = Spike(col_count *tile_size, row_count *tile_size)
                     spike_group.add(spike)
+                if tile == 5: #horiztonal flyer
+                    flyer = FlyerH(col_count *tile_size, row_count *tile_size)
+                    flyer1_group.add(flyer)
+
                 col_count += 1
             row_count +=1
     def draw(self):
@@ -219,15 +224,35 @@ class Enemy(pygame.sprite.Sprite):
             self.move_direction *= -1
             self.move_counter *= -1
 
+class FlyerH(pygame.sprite.Sprite):
+    def __init__(self, x,y,numTiles = 5):
+        pygame.sprite.Sprite.__init__(self)
+        Eimg = pygame.image.load('img/enemy.jpg') #CHANGE IMAGE
+        
+      
+        self.image = pygame.transform.scale(Eimg, (tile_size, tile_size))
+        self.rect= self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.move_direction = 1
+        self.move_counter = 0
+        self.range = numTiles * tile_size
+
+    def update (self):
+        self.rect.x += self.move_direction
+        self.move_counter += 1
+        if self.move_counter > self.range:
+            self.move_direction *= -1
+            self.move_counter *= -1
 
 class Spike(pygame.sprite.Sprite):
     def __init__(self, x,y):
         pygame.sprite.Sprite.__init__(self)
         Eimg = pygame.image.load('img/spike.png')
         
-        self.image = pygame.transform.scale(Eimg, (tile_size-10, tile_size-10))
+        self.image = pygame.transform.scale(Eimg, (tile_size - 10, tile_size - 10))
         self.rect= self.image.get_rect()
-        self.rect.x = x
+        self.rect.x = x + 4
         self.rect.y = y + 10
        
 
@@ -238,7 +263,7 @@ world_data = [worldAsFile.read()]
 print(worldAsFile)
 print(worldAsFile.read())
 
-world2_data = [
+worldTest_data = [
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #1
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #2
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #3
@@ -254,32 +279,54 @@ world2_data = [
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #13
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #14
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #15
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2], #16
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0], #17
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0], #18
-    [0,0,0,0,0,0,0,4,0,0,3,0,0,0,0,0,2,0,0,0], #19
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #16
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #17
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #18
+    [0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0], #19
     [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2], #20
 ]
-world3_data = [
+world11_data = [
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #1
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #2
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #3
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #4
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #5
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #6
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #7
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #8
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #9
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #10
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #11
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #12
+    [0,0,0,0,0,0,2,2,2,2,2,2,2,2,2,2,0,0,0,0], #6
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0], #7
+    [0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0], #8
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2,0], #9
+    [0,0,2,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0], #10
+    [0,0,0,0,0,0,0,0,0,0,0,0,2,2,2,0,0,0,0,0], #11
+    [0,0,0,0,2,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0], #12
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #13
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #14
+    [0,0,0,0,0,0,2,2,2,0,0,0,0,0,0,0,0,0,0,0], #14
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #15
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2], #16
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0], #17
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0], #18
-    [0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,2,0,0,0], #19
+    [0,0,0,0,0,0,0,0,0,0,2,2,2,0,0,0,0,0,0,0], #16
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #17
+    [0,0,0,0,0,0,2,2,2,0,0,0,0,0,0,0,0,0,0,0], #18
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #19
+    [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2], #20
+]
+world12_data = [
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #1
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #t
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #3
+    [2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #4
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2], #5
+    [0,0,0,0,0,2,0,2,0,2,0,2,0,2,0,2,0,0,0,0], #6
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #7
+    [0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #8
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #9
+    [0,0,0,0,0,2,4,4,4,4,4,4,4,4,4,4,4,4,4,4], #10
+    [0,0,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2], #11
+    [2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #12
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #13
+    [0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #14
+    [0,0,0,0,4,0,0,4,0,0,4,0,0,4,0,0,0,0,0,0], #15
+    [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,0,0,0], #16
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #17
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0], #18
+    [0,0,0,2,0,0,2,0,0,2,0,0,2,0,0,2,0,0,0,0], #19
     [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2], #20
 ]
 #load images
@@ -288,15 +335,16 @@ restart_img = pygame.image.load("img/restart.png")
 start_img = pygame.image.load("img/start_btn.png")
 exit_img = pygame.image.load("img/exit_btn.png")
 
-player = Player(100,screen_height - 160)
+player = Player(40,screen_height - 50)
 spike_group = pygame.sprite.Group()
 blob_group = pygame.sprite.Group()
+flyer1_group = pygame.sprite.Group()
 
 #load  in level data and create world
 #pickle_in = open(f'level{level}_data.text')
 #world_data = pickle.load(pickle_in)
 
-worldCurrent = World(world2_data)
+worldCurrent = World(worldTest_data)
 
 #world2 = World(world2_data)
 
@@ -324,9 +372,11 @@ while run: #runs game
 
         if game_over == 0:
             blob_group.update() #moves enemies
+            flyer1_group.update()
 
         blob_group.draw(screen)
         spike_group.draw(screen)
+        flyer1_group.draw(screen)
 
         #game over is a global var so it can't easily be accesed in a function cause it will look for a local var by name
         #of game_over which doesnt exist so the player update function, takes game_over as an input so that the same game_over
