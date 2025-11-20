@@ -273,7 +273,7 @@ blob_group = pygame.sprite.Group()
 #pickle_in = open(f'level{level}_data.text')
 #world_data = pickle.load(pickle_in)
 
-worldCurrent = World(world_data)
+worldCurrent = World(world2_data)
 
 #world2 = World(world2_data)
 
