@@ -103,30 +103,26 @@ class Player():
                         dy = tile[1].top - self.rect.bottom
                         self.vel_y = 0 
                         self.in_air = False  
-                #reset jump when touching top of block, makes you able to stick to bottom of blocks for some reason 
+            if dy == 0:
+                self.jumped = False    
                 
-                
-                #if self.rect.bottom == tile[1].top and self.rect.top != tile[1].bottom:
-                    #print("double jump")
-                    self.jumped = False
-                #if self.rect.right == tile[1].left: 
-                    #print("double jump")
-                    self.jumped = False
-                #if self.rect.left == tile[1].right:
-                    #print("double jump")
-                    self.jumped = False
+            
 
             #check for collision with enemies 
-         
-            
+            for sprite in blob_group:
+                if sprite.rect.top == self.rect.bottom and self.in_air == True:
+                    print("get goombad")
+                    self.vel_y = -15
+                    self.jumped = True  
+                
             if pygame.sprite.spritecollide(self, blob_group, False):
-                game_over = -1 
-
+                game_over = -1     
                 #check for collision with spike
             if pygame.sprite.spritecollide(self, spike_group, False):
                 game_over = -1
             if pygame.sprite.spritecollide(self, flyer1_group, False):
                 game_over = -1      
+       
         elif game_over == -1:
             self.image = self.dead_image
             
