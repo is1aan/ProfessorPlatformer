@@ -234,9 +234,9 @@ class FlyerH(pygame.sprite.Sprite):
         self.rect= self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
-        self.move_direction = 1
+        self.move_direction = 4
         self.move_counter = 0
-        self.range = numTiles * tile_size
+        self.range = numTiles/self.move_direction * 1.5 * tile_size
 
     def update (self):
         self.rect.x += self.move_direction
@@ -312,7 +312,7 @@ world12_data = [
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #t
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #3
     [2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #4
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2], #5
+    [0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,2,2,2], #5
     [0,0,0,0,0,2,0,2,0,2,0,2,0,2,0,2,0,0,0,0], #6
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #7
     [0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #8
@@ -321,11 +321,11 @@ world12_data = [
     [0,0,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2], #11
     [2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #12
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #13
-    [0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #14
+    [0,2,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0], #14
     [0,0,0,0,4,0,0,4,0,0,4,0,0,4,0,0,0,0,0,0], #15
     [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,0,0,0], #16
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #17
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0], #18
+    [0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,2,0], #18
     [0,0,0,2,0,0,2,0,0,2,0,0,2,0,0,2,0,0,0,0], #19
     [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2], #20
 ]
@@ -335,7 +335,7 @@ restart_img = pygame.image.load("img/restart.png")
 start_img = pygame.image.load("img/start_btn.png")
 exit_img = pygame.image.load("img/exit_btn.png")
 
-player = Player(40,screen_height - 50)
+player = Player(0,screen_height - 50)
 spike_group = pygame.sprite.Group()
 blob_group = pygame.sprite.Group()
 flyer1_group = pygame.sprite.Group()
@@ -344,7 +344,7 @@ flyer1_group = pygame.sprite.Group()
 #pickle_in = open(f'level{level}_data.text')
 #world_data = pickle.load(pickle_in)
 
-worldCurrent = World(worldTest_data)
+worldCurrent = World(world12_data)
 
 #world2 = World(world2_data)
 
