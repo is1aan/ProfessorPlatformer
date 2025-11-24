@@ -1,6 +1,7 @@
 import pygame
 from pygame.locals import *
-import pickle
+import tkinter as tk
+
 
 pygame.init()
 
@@ -14,18 +15,21 @@ tile_size = screen_height/20
 game_over = 0
 main_menu = True
 level = 1
-
+world = 1
+font = pygame.font.Font(None, 32)
+color = pygame.Color('chartreuse4')
 
 screen =  pygame.display.set_mode((screen_width, screen_height)) #makes screen
 pygame.display.set_caption('67platformer67')  #name for the screen in the top header bar
 
 class Button():
-    def __init__(self,x,y, image):
+    def __init__(self,x,y, image,option = None):
         self.image = image
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
         self.clicked = False
+        self.option  = option
     
     def draw(self):
         action  = False
@@ -51,11 +55,14 @@ def draw_grid():
         pygame.draw.line(screen, (255,255,255),(0, line *tile_size),(screen_width,line*tile_size))
         pygame.draw.line(screen, (255,255,255),( line *tile_size,0),(line*tile_size,screen_width))
 
+def load_level(level): 
+    worldCurrent.update(level)
+
+
 class Player():
     def __init__(self,x,y):
         self.reset(x,y)
  
-
     def update(self, game_over):
         
         dx = 0
@@ -104,28 +111,30 @@ class Player():
                         dy = tile[1].top - self.rect.bottom
                         self.vel_y = 0 
                         self.in_air = False  
-                #reset jump when touching top of block, makes you able to stick to bottom of blocks for some reason 
+            if dy == 0:
+                self.jumped = False    
                 
-                
-                #if self.rect.bottom == tile[1].top and self.rect.top != tile[1].bottom:
-                    #print("double jump")
-                    self.jumped = False
-                #if self.rect.right == tile[1].left: 
-                    #print("double jump")
-                    self.jumped = False
-                #if self.rect.left == tile[1].right:
-                    #print("double jump")
-                    self.jumped = False
-
+            
+            
             #check for collision with enemies 
+            #for sprite in blob_group.sprites():
+            #    if sprite.rect.top == self.rect.bottom and self.in_air == True:
+            #        print("get goombad")
+            #        self.vel_y = -15
+            #        self.jumped = True  
+                
+            if pygame.sprite.collide_rect(self, pendar):
+                print("asking")
+                game_over = pendar.askQuestion(screen,game_over)
+            
             if pygame.sprite.spritecollide(self, blob_group, False):
-                game_over = -1 
-
+                game_over = -1     
                 #check for collision with spike
             if pygame.sprite.spritecollide(self, spike_group, False):
                 game_over = -1
             if pygame.sprite.spritecollide(self, flyer1_group, False):
                 game_over = -1      
+       
         elif game_over == -1:
             self.image = self.dead_image
             
@@ -169,7 +178,7 @@ class World():
         grass_img = pygame.image.load('img/grass.png')
         
         row_count = 0
-        for row in data:
+        for row in data[0]:
             col_count = 0
             for tile in row:
                 if tile == 1:  #dirt
@@ -195,13 +204,76 @@ class World():
                 if tile == 5: #horiztonal flyer
                     flyer = FlyerH(col_count *tile_size, row_count *tile_size)
                     flyer1_group.add(flyer)
-
+                if tile == 9:
+                    pendar.update(col_count *tile_size, row_count *tile_size, data[1], data[2])
+                    
                 col_count += 1
             row_count +=1
     def draw(self):
         for tile in self.tile_list: #self.tile_list looks for the tile list from this created object and no other world objects
             screen.blit(tile[0], tile[1])
             pygame.draw.rect(screen,(0,0,0),tile[1],2)
+    def update(self, data):
+        self.tile_list = []
+        
+        #load images
+        dirt_img = pygame.image.load('img/dirt.jpg')
+        grass_img = pygame.image.load('img/grass.png')
+        
+        row_count = 0
+        for row in data[0]:
+            col_count = 0
+            for tile in row:
+                if tile == 1:  #dirt
+                    img = pygame.transform.scale(dirt_img, (tile_size, tile_size))  #makes image of dirt cube
+                    img_rect = img.get_rect()   #makes the dirt image actually have a bounds
+                    img_rect.x = col_count *tile_size
+                    img_rect.y = row_count *tile_size
+                    tile = (img, img_rect)
+                    self.tile_list.append(tile)
+                if tile == 2:  #grass
+                    img = pygame.transform.scale(grass_img, (tile_size, tile_size))  #makes image of grass cube
+                    img_rect = img.get_rect()   #makes the dirt image actually have a bounds
+                    img_rect.x = col_count *tile_size
+                    img_rect.y = row_count *tile_size
+                    tile = (img, img_rect)
+                    self.tile_list.append(tile)
+                if tile == 3:  #enemy
+                    blob = Enemy(col_count *tile_size, row_count *tile_size)
+                    blob_group.add(blob)
+                if tile == 4: #spike
+                    spike = Spike(col_count *tile_size, row_count *tile_size)
+                    spike_group.add(spike)
+                if tile == 5: #horiztonal flyer
+                    flyer = FlyerH(col_count *tile_size, row_count *tile_size)
+                    flyer1_group.add(flyer)
+                if tile == 9:
+                    pendar.update(col_count *tile_size, row_count *tile_size, data[1], data[2])
+                col_count += 1
+            row_count +=1
+    def nextLevel (self, level, world):
+        if world == 1:
+            if level == 1:
+                self.update(world11_data)
+            elif level == 2:
+                print("next lvl")
+                self.update(world12_data)
+            elif level == 3:
+                self.update(world13_data)
+        if world == 2:
+            if level == 1:
+                self.update(world21_data)
+            if level == 2:
+                self.update(world22_data)
+            if level == 3:
+                self.update(world23_data)
+        if world == 3:
+            if level == 1:
+                self.update(world31_data)
+            if level == 2:
+                self.update(world32_data)
+            if level == 3:
+                self.update(world33_data)
 
 
 class Enemy(pygame.sprite.Sprite):
@@ -209,7 +281,6 @@ class Enemy(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         Eimg = pygame.image.load('img/enemy.jpg')
         
-      
         self.image = pygame.transform.scale(Eimg, (tile_size, tile_size))
         self.rect= self.image.get_rect()
         self.rect.x = x
@@ -254,16 +325,60 @@ class Spike(pygame.sprite.Sprite):
         self.rect= self.image.get_rect()
         self.rect.x = x + 4
         self.rect.y = y + 10
+
+class Pendar(pygame.sprite.Sprite):
+    def __init__(self, x,y , question, answer):
+        pygame.sprite.Sprite.__init__(self)
+        Eimg = pygame.image.load('img/Pendar.png')
+        
+        self.image = pygame.transform.scale(Eimg, (tile_size - 10, tile_size - 10))
+        self.rect= self.image.get_rect()
+        self.rect.x = x + 4
+        self.rect.y = y + 10
+        self.question = question
+        self.answer = answer
+    
+    def askQuestion(self, screen,game_over):
+        game_over = 1
+        input_rect = pygame.Rect(200, 300, 400, 200)
+        pygame.draw.rect(screen, color, input_rect)
+        text_surface = font.render(self.question, True, (255, 255, 255))
+        screen.blit(text_surface, (input_rect.x+5, input_rect.y+5))
+        
+        return game_over
+
+    def update(self, x , y , question,answer):
+        pygame.sprite.Sprite.__init__(self)
+        Eimg = pygame.image.load('img/Pendar.png')
+
+        self.image = pygame.transform.scale(Eimg, (tile_size - 10, tile_size - 10))
+        self.rect= self.image.get_rect()
+        self.rect.x = x + 4
+        self.rect.y = y + 10
+        self.question = question
+        self.answer = answer
+    
+    def draw(self, screen):
+        screen.blit(self.image, (self.rect.x,self.rect.y))
+    def answer (self,answer):
+        self.answer = answer.lower()
+    def guess(self, guess, game_over):
+        if self.answer == guess.lower():
+            game_over = 2
+        else:
+            game_over = -1
+        return game_over
+    
        
 
 
 #blueprint for making world, every 1 will be a block and it matches 10x10 grid
-worldAsFile = open(f"level{level}_data.text")
-world_data = [worldAsFile.read()]
-print(worldAsFile)
-print(worldAsFile.read())
+#worldAsFile = open(f"level{level}_data.txt")
+#world_data = [worldAsFile.read()]
+#print(worldAsFile)
+#print(worldAsFile.read())
 
-worldTest_data = [
+worldTest_data = ([
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #1
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #2
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #3
@@ -282,10 +397,14 @@ worldTest_data = [
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #16
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #17
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #18
-    [0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0], #19
+    [0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0], #19
     [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2], #20
-]
-world11_data = [
+    ], 
+    "TEST question, the answer is a",
+    "a"
+)
+world11_data = (
+    [
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #1
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #2
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #3
@@ -306,11 +425,15 @@ world11_data = [
     [0,0,0,0,0,0,2,2,2,0,0,0,0,0,0,0,0,0,0,0], #18
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #19
     [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2], #20
-]
-world12_data = [
+    ],
+    'pendar question',  #pendars question
+    "a"  #answer for pendars question
+    
+)
+world12_data = ([
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #1
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #t
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #3
+    [9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #3
     [2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #4
     [0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,2,2,2], #5
     [0,0,0,0,0,2,0,2,0,2,0,2,0,2,0,2,0,0,0,0], #6
@@ -328,17 +451,25 @@ world12_data = [
     [0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,2,0], #18
     [0,0,0,2,0,0,2,0,0,2,0,0,2,0,0,2,0,0,0,0], #19
     [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2], #20
-]
+    ],
+    'pendar question',  #pendars question
+    "a"  #answer for pendars question
+)
+
 #load images
 sky_img = pygame.image.load('img/placeholder.jpg') #looks for img folder inside of open folder and inside of img folder looks for placeholder.jpg
 restart_img = pygame.image.load("img/restart.png")
 start_img = pygame.image.load("img/start_btn.png")
 exit_img = pygame.image.load("img/exit_btn.png")
+a_img = pygame.image.load("img/a.png")
+b_img = pygame.image.load("img/b.png")
+c_img = pygame.image.load("img/c.png")
 
 player = Player(0,screen_height - 50)
 spike_group = pygame.sprite.Group()
 blob_group = pygame.sprite.Group()
 flyer1_group = pygame.sprite.Group()
+pendar = Pendar(1 *tile_size, 1 *tile_size, "test question", "a")
 
 #load  in level data and create world
 #pickle_in = open(f'level{level}_data.text')
@@ -349,9 +480,12 @@ worldCurrent = World(world12_data)
 #world2 = World(world2_data)
 
 #create buttons
-restart_button = Button(screen_width//2 -50, screen_height//2 + 100, restart_img) 
+restart_button = Button(screen_width//2 -65, screen_height//2 + 100, restart_img) 
 start_button = Button(screen_width//2 -250, screen_height//2 + 100, start_img)
 exit_button = Button(screen_width//2 +150, screen_height//2 + 100, exit_img)
+A_button = Button(300, 700, a_img)
+B_button =  Button(400, 700, b_img)
+C_button = Button(500, 700, c_img)
 
 
 run = True
@@ -373,10 +507,38 @@ while run: #runs game
         if game_over == 0:
             blob_group.update() #moves enemies
             flyer1_group.update()
+            pendar.draw(screen)
+            blob_group.draw(screen)
+            spike_group.draw(screen)
+            flyer1_group.draw(screen)
 
-        blob_group.draw(screen)
-        spike_group.draw(screen)
-        flyer1_group.draw(screen)
+        
+        
+        if game_over == 1:
+            pendar.draw(screen)
+            blob_group.draw(screen)
+            spike_group.draw(screen)
+            flyer1_group.draw(screen)
+            game_over = pendar.askQuestion(screen,game_over)
+            if A_button.draw() == True:
+                game_over = pendar.guess("a",game_over)
+            if B_button.draw() == True:
+                game_over = pendar.guess("b", game_over)
+            if C_button.draw() == True:
+                game_over = pendar.guess("c", game_over)
+        
+        if game_over == 2:
+            if level < 3:
+                level +=1
+                player.reset(100,screen_height-130)
+                worldCurrent.nextLevel(level, world)
+                game_over = 0
+            if level == 3:
+                world +=1
+                level = 1
+                player.reset(100,screen_height-130)
+                worldCurrent.nextLevel(level, world)
+                game_over = 0
 
         #game over is a global var so it can't easily be accesed in a function cause it will look for a local var by name
         #of game_over which doesnt exist so the player update function, takes game_over as an input so that the same game_over
@@ -386,6 +548,11 @@ while run: #runs game
         game_over = player.update(game_over)
 
         if game_over == -1:
+            input_rect = pygame.Rect(350, 400, 100, 50)
+            pygame.draw.rect(screen, color, input_rect)
+            text_surface = font.render("you lose!", True, (255, 255, 255))
+            screen.blit(text_surface, (input_rect.x+5, input_rect.y+5))
+            
             if restart_button.draw():
                 player.reset(100,screen_height-130)
                 game_over = 0
