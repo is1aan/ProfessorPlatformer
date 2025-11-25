@@ -456,6 +456,10 @@ world12_data = ([
     "a"  #answer for pendars question
 )
 
+world13_data= ([
+    
+
+
 #load images
 sky_img = pygame.image.load('img/placeholder.jpg') #looks for img folder inside of open folder and inside of img folder looks for placeholder.jpg
 restart_img = pygame.image.load("img/restart.png")
@@ -564,3 +568,4 @@ while run: #runs game
     pygame.display.update()
 
 pygame.quit() #once game loop is turned off the, code after the loop can run; here the game ends
+
