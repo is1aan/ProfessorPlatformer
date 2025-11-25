@@ -75,11 +75,11 @@ class Player():
             if key[pygame.K_UP] and self.jumped ==False and self.in_air == False:
                 self.vel_y = -15
                 self.jumped = True  
-            #elif key[pygame.K_UP] == False:
-            #   self.jumped = False
-            if key[pygame.K_LEFT]:
+            elif key[pygame.K_UP] == False:
+               self.jumped = False
+            if key[pygame.K_LEFT] and self.rect.x >0:
                 dx -= 3
-            if key[pygame.K_RIGHT]:
+            if key[pygame.K_RIGHT]  and self.rect.x < screen_width-(tile_size-15):
                 dx += 3
         
         
@@ -98,8 +98,13 @@ class Player():
             self.in_air = True
             for tile in worldCurrent.tile_list:
                 #check for collision in x direction
+                #always use 1 since tile is a tuple and the hitbox is stored in the 1 index of the tile
                 if tile[1].colliderect(self.rect.x +dx, self.rect.y,self.width,self.height):    
                     dx = 0
+                    #if world !=1:
+                        #adds a wall jump when you move on from world 1
+                    if self.rect.top != tile[1].bottom:
+                        self.in_air = False
                 #check for collision in y direction
                 if tile[1].colliderect(self.rect.x, self.rect.y + dy,self.width,self.height): #creates new rect with coords of current player but adds the future y coord (dy) to check for collision before updating player position
                     #check if below ground (jumping)
@@ -110,9 +115,14 @@ class Player():
                     elif self.vel_y >= 0: #y only negative when jumping
                         dy = tile[1].top - self.rect.bottom
                         self.vel_y = 0 
-                        self.in_air = False  
-            if dy == 0:
-                self.jumped = False    
+                        self.in_air = False
+               
+                  
+            #prevent player frfom going out of bounds
+
+                
+
+             
                 
             
             
@@ -141,7 +151,7 @@ class Player():
 
             
             
-        #update player coords
+        #update player coords after checking for collision at future lucation
         self.rect.x +=dx
         self.rect.y +=dy
 
@@ -152,7 +162,7 @@ class Player():
 
         return game_over
     
-    def reset (self,x,y):
+    def reset (self,x = tile_size +10 ,y = screen_height-tile_size*2):
         img = pygame.image.load('img/player.webp')
         dead = pygame.image.load('img/dead.webp')
         self.image = pygame.transform.scale(img,(tile_size-15,tile_size ))
@@ -163,7 +173,7 @@ class Player():
         self.height = self.image.get_height()
         self.vel_y = 0
         self.jumped  = False
-        self.dead_image =  pygame.transform.scale(dead ,(tile_size-15,tile_size ))
+        self.dead_image =  pygame.transform.scale(dead, (tile_size-15,tile_size ))
         self.in_air = True
 
     
@@ -171,7 +181,7 @@ class Player():
 
 class World():
     def __init__(self, data):
-        self.tile_list = []
+        self.tile_list = [] #list of tuples, each entry has an image and hitbox attached
         
         #load images
         dirt_img = pygame.image.load('img/dirt.jpg')
@@ -393,10 +403,10 @@ worldTest_data = ([
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #12
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #13
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #14
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #15
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #16
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #17
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #18
+    [0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #15
+    [0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,2,2,2,2,0], #16
+    [0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #17
+    [0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #18
     [0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0], #19
     [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2], #20
     ], 
@@ -465,6 +475,7 @@ a_img = pygame.image.load("img/a.png")
 b_img = pygame.image.load("img/b.png")
 c_img = pygame.image.load("img/c.png")
 
+
 player = Player(40,screen_height - 50)
 spike_group = pygame.sprite.Group()
 blob_group = pygame.sprite.Group()
@@ -503,7 +514,7 @@ while run: #runs game
     else:
         
         worldCurrent.draw()
-
+        #game running
         if game_over == 0:
             blob_group.update() #moves enemies
             flyer1_group.update()
@@ -511,10 +522,13 @@ while run: #runs game
             blob_group.draw(screen)
             spike_group.draw(screen)
             flyer1_group.draw(screen)
+            game_over = player.update(game_over)
 
         
-        
+        #answering question
         if game_over == 1:
+            game_over = player.update(game_over)
+
             pendar.draw(screen)
             blob_group.draw(screen)
             spike_group.draw(screen)
@@ -527,16 +541,17 @@ while run: #runs game
             if C_button.draw() == True:
                 game_over = pendar.guess("c", game_over)
         
+        #add level increments, if question is right
         if game_over == 2:
             if level < 3:
                 level +=1
-                player.reset(100,screen_height-130)
+                player.reset()
                 worldCurrent.nextLevel(level, world)
                 game_over = 0
             if level == 3:
                 world +=1
                 level = 1
-                player.reset(100,screen_height-130)
+                player.reset()
                 worldCurrent.nextLevel(level, world)
                 game_over = 0
 
@@ -545,8 +560,9 @@ while run: #runs game
         #can be used as both a local and global variable with respect to the player update function
         #the update function then returns the game_over variable to allow the global game_over variable to be changed by the 
         #local game_over var that is created in update function
-        game_over = player.update(game_over)
-
+        
+        
+        #game over
         if game_over == -1:
             input_rect = pygame.Rect(350, 400, 100, 50)
             pygame.draw.rect(screen, color, input_rect)
