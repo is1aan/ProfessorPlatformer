@@ -162,7 +162,7 @@ class Player():
 
         return game_over
     
-    def reset (self,x = tile_size +10 ,y = screen_height-tile_size*2):
+    def reset (self,x = tile_size +10 ,y = screen_height-tile_size):
         img = pygame.image.load('img/player.webp')
         dead = pygame.image.load('img/dead.webp')
         self.image = pygame.transform.scale(img,(tile_size-15,tile_size ))
@@ -490,7 +490,7 @@ world13_data= ([
   ],
    'aucoin question',
    "a"
-
+)
 
 #load images
 sky_img = pygame.image.load('img/placeholder.jpg') #looks for img folder inside of open folder and inside of img folder looks for placeholder.jpg
@@ -502,7 +502,7 @@ b_img = pygame.image.load("img/b.png")
 c_img = pygame.image.load("img/c.png")
 
 
-player = Player(0,screen_height - 50)
+player = Player(tile_size +10 , screen_height-tile_size)
 spike_group = pygame.sprite.Group()
 blob_group = pygame.sprite.Group()
 flyer1_group = pygame.sprite.Group()
@@ -596,7 +596,7 @@ while run: #runs game
             screen.blit(text_surface, (input_rect.x+5, input_rect.y+5))
             
             if restart_button.draw():
-                player.reset(100,screen_height-130)
+                player.reset()
                 game_over = 0
 
     for event in pygame.event.get(): 
