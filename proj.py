@@ -480,7 +480,7 @@ world13_data= ([
   ],
    'aucoin question',
    "a"
-
+)
 
 #load images
 sky_img = pygame.image.load('img/placeholder.jpg') #looks for img folder inside of open folder and inside of img folder looks for placeholder.jpg
