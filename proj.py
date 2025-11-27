@@ -1,4 +1,5 @@
 import pygame
+import pygame.freetype
 from pygame.locals import *
 import tkinter as tk
 
@@ -164,6 +165,8 @@ class Player():
                 game_over = -1
             if pygame.sprite.spritecollide(self, flyer1_group, False):
                 game_over = -1      
+            if pygame.sprite.spritecollide(self, flyerv_Group, False):
+                game_over = -1
        
         elif game_over == -1:
             self.image = self.dead_image
@@ -185,7 +188,7 @@ class Player():
     def reset (self,x = tile_size +10 ,y = screen_height-tile_size):
         img = pygame.image.load('img/player.webp')
         dead = pygame.image.load('img/dead.webp')
-        self.image = pygame.transform.scale(img,(tile_size-15,tile_size ))
+        self.image = pygame.transform.scale(img,(tile_size-15,tile_size-1 ))
         self.rect = self.image.get_rect()  #creates hitbox for player, alwasy attached to player
         self.rect.x = x
         self.rect.y = y
@@ -241,6 +244,11 @@ class World():
                 if tile == 5: #horiztonal flyer
                     flyer = FlyerH(col_count *tile_size, row_count *tile_size)
                     flyer1_group.add(flyer)
+                if tile == 6: #vertical flyer
+                    flyer = FlyerV(col_count *tile_size, row_count *tile_size)
+                    flyerv_Group.add(flyer)
+                if tile == 7:
+                    wallR = wallSpikeR()  
                 if tile == 9:
                     pendar.update(col_count *tile_size, row_count *tile_size, data[1], data[2])
                 col_count += 1
@@ -267,12 +275,12 @@ class World():
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, x,y):
         pygame.sprite.Sprite.__init__(self)
-        Eimg = pygame.image.load('img/enemy.jpg')
+        Eimg = pygame.image.load('img/enemy.png')
         
-        self.image = pygame.transform.scale(Eimg, (tile_size, tile_size))
+        self.image = pygame.transform.scale(Eimg, (tile_size-5, tile_size-5))
         self.rect= self.image.get_rect()
         self.rect.x = x
-        self.rect.y = y
+        self.rect.y = y+5
         self.move_direction = 1
         self.move_counter = 0
 
@@ -286,14 +294,14 @@ class Enemy(pygame.sprite.Sprite):
 class FlyerH(pygame.sprite.Sprite):
     def __init__(self, x,y,numTiles = 5):
         pygame.sprite.Sprite.__init__(self)
-        Eimg = pygame.image.load('img/enemy.jpg') #CHANGE IMAGE
+        Eimg = pygame.image.load('img/enemy.png') #CHANGE IMAGE
         
       
-        self.image = pygame.transform.scale(Eimg, (tile_size, tile_size))
+        self.image = pygame.transform.scale(Eimg, (tile_size-5, tile_size-5))
         self.rect= self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
-        self.move_direction = 4
+        self.move_direction = 3
         self.move_counter = 0
         self.range = numTiles/self.move_direction * 1.5 * tile_size
 
@@ -304,54 +312,87 @@ class FlyerH(pygame.sprite.Sprite):
             self.move_direction *= -1
             self.move_counter *= -1
 
+class FlyerV(pygame.sprite.Sprite):
+    def __init__(self, x,y,numTiles = 1):
+        pygame.sprite.Sprite.__init__(self)
+        Eimg = pygame.image.load('img/enemy.png') #CHANGE IMAGE
+      
+        self.image = pygame.transform.scale(Eimg, (tile_size, tile_size))
+        self.rect= self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.move_direction = 3
+        self.move_counter = 0
+        self.range = numTiles/self.move_direction * 1.5 * tile_size
+
+    def update (self):
+        self.rect.y += self.move_direction
+        self.move_counter += 1
+        if self.move_counter > self.range:
+            self.move_direction *= -1
+            self.move_counter *= -1
+
 class Spike(pygame.sprite.Sprite):
     def __init__(self, x,y):
         pygame.sprite.Sprite.__init__(self)
         Eimg = pygame.image.load('img/spike.png')
         
-        self.image = pygame.transform.scale(Eimg, (tile_size - 10, tile_size - 10))
+        self.image = pygame.transform.scale(Eimg, (tile_size - 15, tile_size - 15))
         self.rect= self.image.get_rect()
-        self.rect.x = x + 4
-        self.rect.y = y + 10
+        self.rect.x = x + 6
+        self.rect.y = y + 15
+
+class wallSpikeR(pygame.sprite.Sprite):
+    def __init__(self, x,y,rotation):
+        pygame.sprite.Sprite.__init__(self)
+        Eimg = pygame.image.load('img/spike.png')
+        
+        self.image = pygame.transform.scale(Eimg, (tile_size - 15, tile_size - 15))
+        self.image = pygame.transform.rotate(self.image,-90)
+        self.rect= self.image.get_rect()
+        self.rect.x = x + 6
+        self.rect.y = y + 15
+        self.rotation = rotation
 
 class Pendar(pygame.sprite.Sprite):
     def __init__(self, x,y , question, answer):
-        pygame.sprite.Sprite.__init__(self)
-        Eimg = pygame.image.load('img/Pendar.png')
-        
-        self.image = pygame.transform.scale(Eimg, (tile_size - 10, tile_size - 10))
-        self.rect= self.image.get_rect()
-        self.rect.x = x + 4
-        self.rect.y = y + 10
-        self.question = question
-        self.answer = answer
+        self.update(x,y,question,answer)
     
     def askQuestion(self, screen,game_over):
         game_over = 1
+        #load fond
+        font = pygame.freetype.SysFont("sans", 20)
+        #make rectangle to make text stand out
         input_rect = pygame.Rect(200, 300, 400, 200)
         pygame.draw.rect(screen, color, input_rect)
-        text_surface = font.render(self.question, True, (255, 255, 255))
+
+        text_surface, rect =  font.render(self.question, (0, 0, 0))
         screen.blit(text_surface, (input_rect.x+5, input_rect.y+5))
         
         return game_over
 
     def update(self, x , y , question,answer):
         pygame.sprite.Sprite.__init__(self)
-        Eimg = pygame.image.load('img/Pendar.png')
-
+        if level <=2:
+            Eimg = pygame.image.load('img/Pendar.png')
+        elif level <5:
+            Eimg = pygame.image.load('img/boxin.png')
+        else:
+            Eimg = pygame.image.load('img/aucoin.png')
         self.image = pygame.transform.scale(Eimg, (tile_size - 10, tile_size - 10))
         self.rect= self.image.get_rect()
         self.rect.x = x + 4
         self.rect.y = y + 10
         self.question = question
-        self.answer = answer
+        print(self.question)
+        self.ans = answer
     
     def draw(self, screen):
         screen.blit(self.image, (self.rect.x,self.rect.y))
     def answer (self,answer):
-        self.answer = answer.lower()
+        self.ans = answer.lower()
     def guess(self, guess, game_over):
-        if self.answer == guess.lower():
+        if self.ans == guess.lower():
             game_over = 2
         else:
             game_over = -1
@@ -367,29 +408,29 @@ class Pendar(pygame.sprite.Sprite):
 #print(worldAsFile.read())
 
 worldTest_data = ([
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #1
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #2
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #3
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #4
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #5
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #6
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #7
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #8
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #9
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #10
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #11
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #12
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #13
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #14
-    [0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #15
-    [0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,2,2,2,2,0], #16
-    [0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #17
-    [0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #18
-    [0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0], #19
-    [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2], #20
-    ], 
-    "TEST question, the answer is a",
-    "a"
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #1
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #2
+  [0,0,0,0,4,0,0,4,0,0,0,0,0,3,0,0,0,0,0,0], #3
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #4
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #5
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #6
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #7
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #8
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #9 
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #10 
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #11 
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #12 
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #13
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #14 
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #15
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #16
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #17
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #18
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #19 
+  [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2]  #20
+  ],
+   'pendar question',
+   "a"
 )
 world1_data = (
     [
@@ -414,15 +455,15 @@ world1_data = (
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #19
     [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2], #20
     ],
-    'Which logic statement returns True?\na: True and False\nb:True or False\nc:True or False and False',  #pendars question
+    'Which logic statement returns True?\na: True and False\nb: True or False\nc: True or False and False',  #pendars question
     "b"  #answer for pendars question
     
 )
 world2_data = ([
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #1
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #t
-    [9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #3
-    [2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #4
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #3
+    [2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9], #4
     [0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,2,2,2], #5
     [0,0,0,0,0,2,0,2,0,2,0,2,0,2,0,2,0,0,0,0], #6
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #7
@@ -447,26 +488,78 @@ world2_data = ([
 world3_data= ([
   [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #1
   [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #2
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #3
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #4
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #5
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #6
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #7
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #8
-  [0,0,2,0,0,0,2,0,0,0,2,0,0,0,2,0,0,0,2,0], #9 
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #10 
-  [0,0,0,0,0,0,2,2,0,0,0,2,2,2,0,0,0,0,0,0], #11 
-  [0,2,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0], #12 
-  [0,2,0,0,0,0,0,2,0,0,0,0,2,0,0,2,0,0,0,0], #13
-  [0,0,0,0,4,0,3,0,0,0,0,0,0,0,0,3,0,0,0,0], #14 
-  [0,0,3,0,0,0,0,0,0,0,2,0,0,0,5,0,0,3,0,0], #15
-  [0,0,0,2,2,0,0,0,0,0,0,0,3,0,0,2,2,0,0,0], #16
-  [0,0,0,4,0,0,0,0,2,0,0,2,0,2,0,0,0,0,0,0], #17
+  [0,0,0,0,4,0,0,4,0,0,0,0,0,3,0,0,0,0,0,0], #3
+  [0,2,2,2,2,2,2,2,2,2,0,2,2,2,2,2,2,2,0,2], #4
+  [9,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2], #5
+  [2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2], #6
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2], #7
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2], #8
+  [0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,2], #9 
+  [0,0,0,2,2,2,2,2,0,0,0,2,2,2,2,0,2,2,0,2], #10 
+  [0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,2], #11 
+  [0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #12 
+  [0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #13
+  [0,2,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,0,0,0], #14 
+  [0,2,2,2,2,2,0,2,2,0,0,0,0,0,0,0,0,0,0,0], #15
+  [0,0,0,0,0,0,0,0,2,2,2,2,2,2,0,0,0,0,0,0], #16
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0], #17
   [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #18
-  [0,0,0,0,0,0,0,5,0,0,0,0,0,0,3,0,0,0,0,5], #19 
+  [0,0,0,0,0,0,3,0,0,0,4,0,0,0,0,0,0,0,0,0], #19 
   [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2]  #20
   ],
-   'pendar question',
+   'boxin question',
+   "a"
+)
+
+world4_data= ([
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #1
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #2
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #3
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #4
+  [0,0,0,0,0,3,0,0,0,9,0,0,0,0,3,0,0,0,0,0], #5
+  [0,0,0,0,2,2,2,2,2,2,2,2,2,2,2,2,0,0,0,0], #6
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #7
+  [2,2,2,2,2,2,2,2,2,0,0,2,2,2,2,2,2,2,2,2], #8
+  [2,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,2], #9 
+  [2,0,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,0,0,2], #10 
+  [2,0,0,0,0,0,0,0,0,2,2,0,0,0,0,0,0,0,0,2], #11 
+  [2,2,2,2,2,0,0,0,0,2,2,0,0,0,0,0,0,0,6,2], #12 
+  [0,0,0,0,0,4,0,0,0,2,2,0,0,0,0,0,0,0,0,2], #13
+  [0,0,0,2,2,2,2,0,2,0,0,2,0,2,2,2,2,2,0,2], #14 
+  [0,0,0,0,0,0,0,0,2,0,0,2,0,0,0,0,0,0,0,0], #15
+  [0,0,0,0,0,0,0,0,2,0,0,2,0,0,0,0,0,0,0,0], #16
+  [0,0,0,0,0,0,0,0,2,0,0,2,0,0,0,0,0,0,0,0], #17
+  [0,0,0,0,0,0,0,0,2,0,0,2,0,0,0,0,0,0,0,0], #18
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #19 
+  [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2]  #20
+  ],
+   'boxin question',
+   "a"
+)
+
+world5_data = ([
+  [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2], #1
+  [2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2], #2
+  [2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2], #3
+  [2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2], #4
+  [2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2], #5
+  [2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2], #6
+  [2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2], #7
+  [2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2], #8
+  [2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2], #9 
+  [2,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,2], #10 
+  [2,0,0,0,0,0,0,0,2,2,2,2,0,0,0,0,0,0,0,2], #11 
+  [2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2], #12 
+  [2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2], #13
+  [2,0,0,0,0,0,2,0,0,0,0,0,0,2,0,0,0,0,0,2], #14 
+  [2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2], #15
+  [2,0,0,0,2,0,0,0,0,0,0,0,0,0,0,2,0,0,0,2], #16
+  [2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2], #17
+  [2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2], #18
+  [2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2], #19 
+  [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2]  #20
+  ],
+   'aucoin question',
    "a"
 )
 
@@ -485,6 +578,7 @@ player = Player(tile_size +10 , screen_height-tile_size)
 spike_group = pygame.sprite.Group()
 blob_group = pygame.sprite.Group()
 flyer1_group = pygame.sprite.Group()
+flyerv_Group = pygame.sprite.Group()
 pendar = Pendar(1 *tile_size, 1 *tile_size, "test question", "a")
 
 
@@ -492,7 +586,7 @@ pendar = Pendar(1 *tile_size, 1 *tile_size, "test question", "a")
 #pickle_in = open(f'level{level}_data.text')
 #world_data = pickle.load(pickle_in)
 
-worldCurrent = World(world1_data)
+worldCurrent = World(world3_data)
 
 #world2 = World(world2_data)
 
@@ -520,28 +614,34 @@ while run: #runs game
     screen.blit(sky_img, (0,0))
     if main_menu:
         if lvl1.drawStr() == True:
+            level = 1
             print("button1")
             worldCurrent.nextLevel(level)
+            game_over = 0
             main_menu = False
         if lvl2.drawStr() == True:
             print("button2")
             level = 2
             worldCurrent.nextLevel(level)
+            game_over = 0
             main_menu = False
         if lvl3.drawStr() == True:
             print("button3")
             level = 3
             worldCurrent.nextLevel(level)
+            game_over = 0
             main_menu = False
         if lvl4.drawStr() == True:
             print("button4")
             level = 4
             worldCurrent.nextLevel(level)
+            game_over = 0
             main_menu = False
         if lvl5.drawStr() == True:
             print("button5")
             level = 5
             worldCurrent.nextLevel(level)
+            game_over = 0
             main_menu = False
         
         if exit_button.draw() == True:
@@ -555,10 +655,12 @@ while run: #runs game
         if game_over == 0:
             blob_group.update() #moves enemies
             flyer1_group.update()
+            flyerv_Group.update()
             pendar.draw(screen)
             blob_group.draw(screen)
             spike_group.draw(screen)
             flyer1_group.draw(screen)
+            flyerv_Group.draw(screen)
             game_over = player.update(game_over)
 
         
