@@ -171,13 +171,9 @@ class Player():
         elif game_over == -1:
             self.image = self.dead_image
             
-
-            
-            
         #update player coords after checking for collision at future lucation
         self.rect.x +=dx
         self.rect.y +=dy
-
       
         #draw player on screen
         screen.blit(self.image, self.rect)
@@ -187,7 +183,7 @@ class Player():
     
     def reset (self,x = tile_size +10 ,y = screen_height-tile_size):
         img = pygame.image.load('img/player.webp')
-        dead = pygame.image.load('img/dead.webp')
+        dead = pygame.image.load('img/dead.png')
         self.image = pygame.transform.scale(img,(tile_size-15,tile_size-1 ))
         self.rect = self.image.get_rect()  #creates hitbox for player, alwasy attached to player
         self.rect.x = x
@@ -365,9 +361,11 @@ class Pendar(pygame.sprite.Sprite):
         #make rectangle to make text stand out
         input_rect = pygame.Rect(200, 300, 400, 200)
         pygame.draw.rect(screen, color, input_rect)
-
-        text_surface, rect =  font.render(self.question, (0, 0, 0))
-        screen.blit(text_surface, (input_rect.x+5, input_rect.y+5))
+        QList = self.question.split("-")
+        for i in range(len(QList)):
+            text_surface = font.render(QList[i], (0, 0, 0))
+           
+            screen.blit(text_surface[0], (input_rect.x+5 , input_rect.y+5+ i*20))
         
         return game_over
 
@@ -455,7 +453,7 @@ world1_data = (
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #19
     [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2], #20
     ],
-    'Which logic statement returns True?\na: True and False\nb: True or False\nc: True or False and False',  #pendars question
+    'Which logic statement returns True?-a: True and False-b: True or False-c: True or False and False',  #pendars question
     "b"  #answer for pendars question
     
 )
@@ -520,7 +518,7 @@ world4_data= ([
   [0,0,0,0,2,2,2,2,2,2,2,2,2,2,2,2,0,0,0,0], #6
   [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #7
   [2,2,2,2,2,2,2,2,2,0,0,2,2,2,2,2,2,2,2,2], #8
-  [2,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,2], #9 
+  [2,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0], #9 
   [2,0,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,0,0,2], #10 
   [2,0,0,0,0,0,0,0,0,2,2,0,0,0,0,0,0,0,0,2], #11 
   [2,2,2,2,2,0,0,0,0,2,2,0,0,0,0,0,0,0,6,2], #12 
@@ -697,6 +695,7 @@ while run: #runs game
         
         #game over
         if game_over == -1:
+            player.update(game_over)
             input_rect = pygame.Rect(screen_height//2-50, screen_width//2, 100, 50)
             pygame.draw.rect(screen, color, input_rect)
             text_surface = font.render("you lose!", True, (255, 255, 255))
