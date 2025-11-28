@@ -14,9 +14,10 @@ fps = 60
 screen_width = 800
 screen_height = 800
 tile_size = screen_height/20
+winScreen = False
 game_over = 0
 main_menu = True
-level = 1
+level = 0
 
 font = pygame.font.Font(None, 32)
 color = pygame.Color('chartreuse4')
@@ -250,7 +251,7 @@ class World():
                 col_count += 1
             row_count +=1
 
-    def nextLevel (self, level,gameOver):
+    def nextLevel (self, level,gameOver,win_Screen):
         blob_group.empty()
         spike_group.empty()
         flyer1_group.empty()
@@ -267,7 +268,8 @@ class World():
         if level == 5:
             self.update(world5_data)
         if level ==6:
-            gameOver = 3
+            gameOver = 0
+            win_Screen = True
         return gameOver
             
 
@@ -598,6 +600,7 @@ restart_button = Button(screen_width//2 -128 -50, screen_height//2 + 100, restar
 start_button = Button(screen_width//2 -150, screen_height//2, start_img)
 exit_button = Button(screen_width//2 +50, screen_height//2, exit_img)
 menuButton = Button(screen_width//2 +50 , screen_height//2+100, backToMenu)
+menuButtonWin = Button(screen_width//2-50, screen_height//2+100, backToMenu)
 A_button = Button(300, 700, a_img)
 B_button =  Button(400, 700, b_img)
 C_button = Button(500, 700, c_img)
@@ -616,34 +619,42 @@ while run: #runs game
     #order images drawn matter because a larger image can cover a smaller image if smaller image is loaded first
     screen.blit(sky_img, (0,0))
     if main_menu:
+        ky = pygame.key.get_pressed()
+        
+        if ky[pygame.K_q]:
+            print("plus")
+            game_over = 0
+            main_menu = False
+            winScreen = True
+            
         if lvl1.drawStr() == True:
             level = 1
             print("button1")
-            worldCurrent.nextLevel(level, game_over)
+            worldCurrent.nextLevel(level, game_over,winScreen)
             game_over = 0
             main_menu = False
         if lvl2.drawStr() == True:
             print("button2")
             level = 2
-            worldCurrent.nextLevel(level, game_over)
+            worldCurrent.nextLevel(level, game_over,winScreen)
             game_over = 0
             main_menu = False
         if lvl3.drawStr() == True:
             print("button3")
             level = 3
-            worldCurrent.nextLevel(level, game_over)
+            worldCurrent.nextLevel(level, game_over,winScreen)            
             game_over = 0
             main_menu = False
         if lvl4.drawStr() == True:
             print("button4")
             level = 4
-            worldCurrent.nextLevel(level, game_over)
+            worldCurrent.nextLevel(level, game_over,winScreen)            
             game_over = 0
             main_menu = False
         if lvl5.drawStr() == True:
             print("button5")
             level = 5
-            worldCurrent.nextLevel(level, game_over)
+            worldCurrent.nextLevel(level, game_over,winScreen)
             game_over = 0
             main_menu = False
         
@@ -659,9 +670,17 @@ while run: #runs game
         
         text_surface = fnt.render("Main Menu", (0, 0, 0))
         screen.blit(text_surface[0], (input_rect.x+5 , input_rect.y+5))
-
+    elif winScreen:
+        win_rect = pygame.Rect(screen_height//2-50, screen_width//2, 100, 50)
+        pygame.draw.rect(screen, color, win_rect)
+        win_surface = font.render("you win!", True, (255, 255, 255))
+        screen.blit(win_surface, (win_rect.x+5, win_rect.y+5))
+        if menuButtonWin.draw():
+            print("menuPressed")
+            player.reset()
+            main_menu = True
     else:
-        
+      
         worldCurrent.draw()
         #game running
         if game_over == 0:
@@ -696,10 +715,10 @@ while run: #runs game
         if game_over == 2:
             level +=1
             player.reset()
-            game_over = worldCurrent.nextLevel(level, game_over)
+            game_over = worldCurrent.nextLevel(level, game_over,winScreen)
             game_over = 0
-        if game_over == 3:
-            pass
+      
+          
 
         #game over is a global var so it can't easily be accesed in a function cause it will look for a local var by name
         #of game_over which doesnt exist so the player update function, takes game_over as an input so that the same game_over
