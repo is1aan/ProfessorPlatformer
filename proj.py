@@ -5,6 +5,7 @@ import tkinter as tk
 
 
 pygame.init()
+pygame.font.init()
 
 #sets fps
 clock = pygame.time.Clock()
@@ -54,16 +55,15 @@ class Button():
 
         return action
     def drawStr(self):
-        
         action  = False
 
         pos = pygame.mouse.get_pos()
         
-        
         input_rect = pygame.Rect(self.rect.x, self.rect.y, tile_size*2, tile_size*2)
         pygame.draw.rect(screen, color, input_rect)
-        text_surface = font.render(self.str, True, (255, 255, 255))
-        screen.blit(text_surface, (input_rect.x+5, input_rect.y+5))
+        txt_surface = font.render(self.str,True, (255, 255, 255))
+     
+        screen.blit(txt_surface, (input_rect.x+5, input_rect.y+5))
         
         #draws hitbox of button, mostly for debugging but also looks nice
         pygame.draw.rect(screen,(0,0,0),self.rect,2)
@@ -250,10 +250,11 @@ class World():
                 col_count += 1
             row_count +=1
 
-    def nextLevel (self, level):
+    def nextLevel (self, level,gameOver):
         blob_group.empty()
         spike_group.empty()
         flyer1_group.empty()
+        flyerv_Group.empty()
     
         if level == 1:
             self.update(world1_data)
@@ -265,6 +266,9 @@ class World():
             self.update(world4_data)
         if level == 5:
             self.update(world5_data)
+        if level ==6:
+            gameOver = 3
+        return gameOver
             
 
 
@@ -317,7 +321,7 @@ class FlyerV(pygame.sprite.Sprite):
         self.rect= self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
-        self.move_direction = 3
+        self.move_direction = 4
         self.move_counter = 0
         self.range = numTiles/self.move_direction * 1.5 * tile_size
 
@@ -363,10 +367,11 @@ class Pendar(pygame.sprite.Sprite):
         pygame.draw.rect(screen, color, input_rect)
         QList = self.question.split("-")
         for i in range(len(QList)):
-            text_surface = font.render(QList[i], (0, 0, 0))
+            txt2_surface = font.render(QList[i], (0, 0, 0))
            
-            screen.blit(text_surface[0], (input_rect.x+5 , input_rect.y+5+ i*20))
+            screen.blit(txt2_surface[0], (input_rect.x+5 , input_rect.y+5+ i*20))
         
+
         return game_over
 
     def update(self, x , y , question,answer):
@@ -483,7 +488,34 @@ world2_data = ([
     "a"  #answer for pendars question
 )
 
+
+
 world3_data= ([
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #1
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #2
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #3
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #4
+  [0,0,0,0,0,3,0,0,0,9,0,0,0,0,3,0,0,0,0,0], #5
+  [0,0,0,0,2,2,2,2,2,2,2,2,2,2,2,2,0,0,0,0], #6
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #7
+  [2,2,2,2,2,2,2,2,2,0,0,2,2,2,2,2,2,2,2,2], #8
+  [2,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0], #9 
+  [2,0,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,0,2], #10 
+  [2,0,0,0,0,0,0,0,0,2,2,0,0,0,0,0,0,0,0,2], #11 
+  [2,2,2,2,2,0,0,0,0,2,2,0,0,0,0,0,0,0,0,2], #12 
+  [0,0,0,0,0,4,0,0,0,2,2,0,0,0,0,0,0,0,6,2], #13
+  [0,0,0,2,2,2,2,0,2,0,0,2,0,2,2,2,2,2,0,2], #14 
+  [0,0,0,0,0,0,0,0,2,0,0,2,0,0,0,0,0,0,0,0], #15
+  [0,0,0,0,0,0,0,0,2,0,0,2,0,0,0,0,0,0,0,0], #16
+  [0,0,0,0,0,0,0,0,2,0,0,2,0,0,0,0,0,0,0,0], #17
+  [0,0,0,0,0,0,0,0,2,0,0,2,0,0,0,0,0,0,0,0], #18
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #19 
+  [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2]  #20
+  ],
+   'boxin question',
+   "a"
+)
+world4_data= ([
   [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #1
   [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #2
   [0,0,0,0,4,0,0,4,0,0,0,0,0,3,0,0,0,0,0,0], #3
@@ -508,52 +540,25 @@ world3_data= ([
    'boxin question',
    "a"
 )
-
-world4_data= ([
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #1
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #2
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #3
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #4
-  [0,0,0,0,0,3,0,0,0,9,0,0,0,0,3,0,0,0,0,0], #5
-  [0,0,0,0,2,2,2,2,2,2,2,2,2,2,2,2,0,0,0,0], #6
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #7
-  [2,2,2,2,2,2,2,2,2,0,0,2,2,2,2,2,2,2,2,2], #8
-  [2,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0], #9 
-  [2,0,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,0,0,2], #10 
-  [2,0,0,0,0,0,0,0,0,2,2,0,0,0,0,0,0,0,0,2], #11 
-  [2,2,2,2,2,0,0,0,0,2,2,0,0,0,0,0,0,0,6,2], #12 
-  [0,0,0,0,0,4,0,0,0,2,2,0,0,0,0,0,0,0,0,2], #13
-  [0,0,0,2,2,2,2,0,2,0,0,2,0,2,2,2,2,2,0,2], #14 
-  [0,0,0,0,0,0,0,0,2,0,0,2,0,0,0,0,0,0,0,0], #15
-  [0,0,0,0,0,0,0,0,2,0,0,2,0,0,0,0,0,0,0,0], #16
-  [0,0,0,0,0,0,0,0,2,0,0,2,0,0,0,0,0,0,0,0], #17
-  [0,0,0,0,0,0,0,0,2,0,0,2,0,0,0,0,0,0,0,0], #18
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #19 
-  [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2]  #20
-  ],
-   'boxin question',
-   "a"
-)
-
 world5_data = ([
   [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2], #1
-  [2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2], #2
-  [2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2], #3
-  [2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2], #4
-  [2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2], #5
-  [2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2], #6
-  [2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2], #7
-  [2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2], #8
-  [2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2], #9 
-  [2,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,0,0,2], #10 
-  [2,0,0,0,0,0,0,0,2,2,2,2,0,0,0,0,0,0,0,2], #11 
-  [2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2], #12 
-  [2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2], #13
-  [2,0,0,0,0,0,2,0,0,0,0,0,0,2,0,0,0,0,0,2], #14 
-  [2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2], #15
-  [2,0,0,0,2,0,0,0,0,0,0,0,0,0,0,2,0,0,0,2], #16
-  [2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2], #17
-  [2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2], #18
+  [2,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,2], #2
+  [2,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,2], #3
+  [2,0,0,0,0,2,2,0,2,0,0,2,2,2,2,2,2,2,0,2], #4
+  [2,0,0,0,0,0,2,0,2,0,0,2,0,0,0,0,0,0,0,2], #5
+  [2,0,0,0,0,0,2,0,2,0,0,2,0,2,0,0,0,0,0,2], #6
+  [2,0,0,0,0,2,2,0,2,0,0,2,0,2,6,2,0,0,0,2], #7
+  [2,0,0,0,0,0,2,0,2,0,0,2,0,2,0,0,0,0,0,2], #8
+  [2,6,0,0,0,0,2,0,2,0,0,2,0,2,0,0,0,4,0,2], #9 
+  [2,0,0,0,0,2,2,0,2,0,9,2,0,2,2,2,2,2,2,2], #10 
+  [2,0,0,4,0,0,2,0,2,2,2,2,0,0,0,0,0,0,0,2], #11 
+  [2,0,2,2,2,2,2,0,0,0,0,2,2,2,2,2,2,2,0,2], #12 
+  [2,0,2,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,2], #13
+  [2,0,2,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,2], #14 
+  [2,0,2,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,2], #15
+  [2,0,2,0,0,0,2,0,0,3,0,0,3,0,0,3,0,0,0,2], #16
+  [2,0,2,0,0,0,2,2,2,2,2,2,2,2,2,2,2,2,2,2], #17
+  [2,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2], #18
   [2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2], #19 
   [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2]  #20
   ],
@@ -584,7 +589,7 @@ pendar = Pendar(1 *tile_size, 1 *tile_size, "test question", "a")
 #pickle_in = open(f'level{level}_data.text')
 #world_data = pickle.load(pickle_in)
 
-worldCurrent = World(world3_data)
+worldCurrent = World(world1_data)
 
 #world2 = World(world2_data)
 
@@ -596,11 +601,11 @@ menuButton = Button(screen_width//2 +50 , screen_height//2+100, backToMenu)
 A_button = Button(300, 700, a_img)
 B_button =  Button(400, 700, b_img)
 C_button = Button(500, 700, c_img)
-lvl1 = Button(200,100,string="Level 1")
-lvl2 = Button(300,100,string="Level 2")
-lvl3 = Button(400,100,string="Level 3")
-lvl4 = Button(500,100,string="Level 4")
-lvl5 = Button(600,100,string="Level 5")
+lvl1 = Button(128 +32,600,string="Level 1")
+lvl2 = Button(228+32,600,string="Level 2")
+lvl3 = Button(328+32,600,string="Level 3")
+lvl4 = Button(428+32,600,string="Level 4")
+lvl5 = Button(528+32,600,string="Level 5")
 
 
 run = True
@@ -614,31 +619,31 @@ while run: #runs game
         if lvl1.drawStr() == True:
             level = 1
             print("button1")
-            worldCurrent.nextLevel(level)
+            worldCurrent.nextLevel(level, game_over)
             game_over = 0
             main_menu = False
         if lvl2.drawStr() == True:
             print("button2")
             level = 2
-            worldCurrent.nextLevel(level)
+            worldCurrent.nextLevel(level, game_over)
             game_over = 0
             main_menu = False
         if lvl3.drawStr() == True:
             print("button3")
             level = 3
-            worldCurrent.nextLevel(level)
+            worldCurrent.nextLevel(level, game_over)
             game_over = 0
             main_menu = False
         if lvl4.drawStr() == True:
             print("button4")
             level = 4
-            worldCurrent.nextLevel(level)
+            worldCurrent.nextLevel(level, game_over)
             game_over = 0
             main_menu = False
         if lvl5.drawStr() == True:
             print("button5")
             level = 5
-            worldCurrent.nextLevel(level)
+            worldCurrent.nextLevel(level, game_over)
             game_over = 0
             main_menu = False
         
@@ -646,6 +651,15 @@ while run: #runs game
             run = False
         if start_button.draw():
             main_menu = False
+        colorM = pygame.Color(214,170, 24)
+        fnt = pygame.freetype.SysFont("sans", 50)
+        #make rectangle to make text stand out
+        input_rect = pygame.Rect(screen_height//2-100, screen_width//2-100,230, 50)
+        pygame.draw.rect(screen, colorM, input_rect)
+        
+        text_surface = fnt.render("Main Menu", (0, 0, 0))
+        screen.blit(text_surface[0], (input_rect.x+5 , input_rect.y+5))
+
     else:
         
         worldCurrent.draw()
@@ -680,11 +694,12 @@ while run: #runs game
         
         #add level increments, if question is right
         if game_over == 2:
-                level +=1
-                player.reset()
-                worldCurrent.nextLevel(level)
-                game_over = 0
-
+            level +=1
+            player.reset()
+            game_over = worldCurrent.nextLevel(level, game_over)
+            game_over = 0
+        if game_over == 3:
+            pass
 
         #game over is a global var so it can't easily be accesed in a function cause it will look for a local var by name
         #of game_over which doesnt exist so the player update function, takes game_over as an input so that the same game_over
