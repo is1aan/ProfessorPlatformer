@@ -1,7 +1,7 @@
 import pygame
 import pygame.freetype
 from pygame.locals import *
-import tkinter as tk
+
 
 
 pygame.init()
@@ -10,7 +10,7 @@ pygame.font.init()
 #sets fps
 clock = pygame.time.Clock()
 fps = 60
-
+#set game/global variables
 screen_width = 800
 screen_height = 800
 tile_size = screen_height/20
@@ -55,15 +55,16 @@ class Button():
         screen.blit(self.image, self.rect)
 
         return action
+    #similar to .draw but to render a string instead of an image since getting a new image for every button takes time
     def drawStr(self):
         action  = False
 
         pos = pygame.mouse.get_pos()
         
+        #creates a colored background equal to size of button and draws a string on it that is displayed to player
         input_rect = pygame.Rect(self.rect.x, self.rect.y, tile_size*2, tile_size*2)
         pygame.draw.rect(screen, color, input_rect)
         txt_surface = font.render(self.str,True, (255, 255, 255))
-     
         screen.blit(txt_surface, (input_rect.x+5, input_rect.y+5))
         
         #draws hitbox of button, mostly for debugging but also looks nice
@@ -78,12 +79,12 @@ class Button():
             self.clicked = False
 
         return action
-
+#for visualizing how blocks can be placed by drawing a grid, for testing/coding, not in main game
 def draw_grid():
     for line in range(0,20): 
         pygame.draw.line(screen, (255,255,255),(0, line *tile_size),(screen_width,line*tile_size))
         pygame.draw.line(screen, (255,255,255),( line *tile_size,0),(line*tile_size,screen_width))
-
+#loads level
 def load_level(level): 
     worldCurrent.update(level)
 
@@ -91,9 +92,9 @@ def load_level(level):
 class Player():
     def __init__(self,x,y):
         self.reset(x,y)
- 
+    
     def update(self, game_over):
-        
+        #what the player is GOING to move
         dx = 0
         dy = 0
 
@@ -120,6 +121,7 @@ class Player():
             dy += self.vel_y
 
             #check for collision
+            #checks for collision at location player WILL move before actually letting player move
             #1. calculate new player pos
             #2. check collision at new pos
             #3. adjust player position
@@ -178,12 +180,13 @@ class Player():
       
         #draw player on screen
         screen.blit(self.image, self.rect)
-        pygame.draw.rect(screen,(255,255,0),self.rect,2)
+        pygame.draw.rect(screen,(0,0,0),self.rect,2)
 
         return game_over
     
     def reset (self,x = tile_size +10 ,y = screen_height-tile_size):
-        img = pygame.image.load('img/player.webp')
+        #essentaially the initializer for the player, can be called multiple times, for when player dies
+        img = pygame.image.load('img/player.png')
         dead = pygame.image.load('img/dead.png')
         self.image = pygame.transform.scale(img,(tile_size-15,tile_size-1 ))
         self.rect = self.image.get_rect()  #creates hitbox for player, alwasy attached to player
@@ -208,12 +211,15 @@ class World():
             pygame.draw.rect(screen,(0,0,0),tile[1],2)
 
     def update(self, data):
+        #essentially init function that can be ran many times
         self.tile_list = []
         
         #load images
         dirt_img = pygame.image.load('img/dirt.jpg')
         grass_img = pygame.image.load('img/grass.png')
         
+        #loops through each col and row in world data list and checks its value, adds a corresponding tile to a list of tiles 
+        #based on value at each location
         row_count = 0
         for row in data[0]:
             col_count = 0
@@ -244,14 +250,15 @@ class World():
                 if tile == 6: #vertical flyer
                     flyer = FlyerV(col_count *tile_size, row_count *tile_size)
                     flyerv_Group.add(flyer)
-                if tile == 7:
+                if tile == 7: #not used
                     wallR = wallSpikeR()  
-                if tile == 9:
+                if tile == 9: #game goal
                     pendar.update(col_count *tile_size, row_count *tile_size, data[1], data[2])
                 col_count += 1
             row_count +=1
 
-    def nextLevel (self, level,gameOver,win_Screen):
+    def nextLevel (self, level,gameOver):
+        #clears all entities and prepares world for the next level
         blob_group.empty()
         spike_group.empty()
         flyer1_group.empty()
@@ -269,7 +276,7 @@ class World():
             self.update(world5_data)
         if level ==6:
             gameOver = 0
-            win_Screen = True
+            
         return gameOver
             
 
@@ -287,12 +294,14 @@ class Enemy(pygame.sprite.Sprite):
         self.move_counter = 0
 
     def update (self):
+        #moves the enemy left a certain distance a certain number of times until it swaps direction and moves backwards a certain number of times
         self.rect.x += self.move_direction
         self.move_counter += 1
         if self.move_counter > tile_size-5:
             self.move_direction *= -1
             self.move_counter *= -1
 
+#similar to enemy class with differen variables, moves further
 class FlyerH(pygame.sprite.Sprite):
     def __init__(self, x,y,numTiles = 5):
         pygame.sprite.Sprite.__init__(self)
@@ -313,7 +322,7 @@ class FlyerH(pygame.sprite.Sprite):
         if self.move_counter > self.range:
             self.move_direction *= -1
             self.move_counter *= -1
-
+#similar to enemy class with differen variables, moves further
 class FlyerV(pygame.sprite.Sprite):
     def __init__(self, x,y,numTiles = 1):
         pygame.sprite.Sprite.__init__(self)
@@ -333,7 +342,7 @@ class FlyerV(pygame.sprite.Sprite):
         if self.move_counter > self.range:
             self.move_direction *= -1
             self.move_counter *= -1
-
+#similar to enemy class except it doesnt move
 class Spike(pygame.sprite.Sprite):
     def __init__(self, x,y):
         pygame.sprite.Sprite.__init__(self)
@@ -343,7 +352,7 @@ class Spike(pygame.sprite.Sprite):
         self.rect= self.image.get_rect()
         self.rect.x = x + 6
         self.rect.y = y + 15
-
+#not used
 class wallSpikeR(pygame.sprite.Sprite):
     def __init__(self, x,y,rotation):
         pygame.sprite.Sprite.__init__(self)
@@ -355,18 +364,22 @@ class wallSpikeR(pygame.sprite.Sprite):
         self.rect.x = x + 6
         self.rect.y = y + 15
         self.rotation = rotation
-
+#goal of the game
 class Pendar(pygame.sprite.Sprite):
     def __init__(self, x,y , question, answer):
         self.update(x,y,question,answer)
     
     def askQuestion(self, screen,game_over):
+        #changes game state to wher enemies dont move but question is still rendered
         game_over = 1
         #load fond
         font = pygame.freetype.SysFont("sans", 20)
         #make rectangle to make text stand out
         input_rect = pygame.Rect(200, 300, 400, 200)
         pygame.draw.rect(screen, color, input_rect)
+        
+        #since \n does not work, this splits the question along the - key and for each element in the split list it
+        #prints the element in the list but a little but further down for each loop of for loop
         QList = self.question.split("-")
         for i in range(len(QList)):
             txt2_surface = font.render(QList[i], (0, 0, 0))
@@ -377,6 +390,7 @@ class Pendar(pygame.sprite.Sprite):
         return game_over
 
     def update(self, x , y , question,answer):
+        
         pygame.sprite.Sprite.__init__(self)
         if level <=2:
             Eimg = pygame.image.load('img/Pendar.png')
@@ -389,11 +403,11 @@ class Pendar(pygame.sprite.Sprite):
         self.rect.x = x + 4
         self.rect.y = y + 10
         self.question = question
-        print(self.question)
         self.ans = answer
     
     def draw(self, screen):
         screen.blit(self.image, (self.rect.x,self.rect.y))
+    #i forgot why I added this and It seems like its never used but im too scared to remove it
     def answer (self,answer):
         self.ans = answer.lower()
     def guess(self, guess, game_over):
@@ -406,7 +420,10 @@ class Pendar(pygame.sprite.Sprite):
        
 
 
-#blueprint for making world, every 1 will be a block and it matches 10x10 grid
+#blueprint for making world, a tuple with a list, string, and string
+#each number in list corresponds to a type of block and the first string is the question for the level and the second string is the answer
+
+
 #worldAsFile = open(f"level{level}_data.txt")
 #world_data = [worldAsFile.read()]
 #print(worldAsFile)
@@ -514,7 +531,7 @@ world3_data= ([
   [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #19 
   [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2]  #20
   ],
-   'Which equation can be used to calculate mass of a substance given pressure, volume, and temperature?-a: Ideal gas law-b: Clausius Clayperon-c: vant hOff',
+   'Which equation can be used to calculate mass of-a substance given pressure, volume, and temperature?-a: Ideal gas law-b: Clausius Clayperon-c: vant hOff',
    "a"
 )
 world4_data= ([
@@ -578,7 +595,7 @@ a_img = pygame.image.load("img/a.png")
 b_img = pygame.image.load("img/b.png")
 c_img = pygame.image.load("img/c.png")
 
-
+#creates objects and sprite groups
 player = Player(tile_size +10 , screen_height-tile_size)
 spike_group = pygame.sprite.Group()
 blob_group = pygame.sprite.Group()
@@ -591,6 +608,7 @@ pendar = Pendar(1 *tile_size, 1 *tile_size, "test question", "a")
 #pickle_in = open(f'level{level}_data.text')
 #world_data = pickle.load(pickle_in)
 
+#first level
 worldCurrent = World(world1_data)
 
 #world2 = World(world2_data)
@@ -619,6 +637,7 @@ while run: #runs game
     #order images drawn matter because a larger image can cover a smaller image if smaller image is loaded first
     screen.blit(sky_img, (0,0))
     if main_menu:
+        #shortcut to test win screen since beating level 5 every time got annoying
         ky = pygame.key.get_pressed()
         
         if ky[pygame.K_q]:
@@ -626,35 +645,36 @@ while run: #runs game
             game_over = 0
             main_menu = False
             winScreen = True
-            
+
+        #level select buttons    
         if lvl1.drawStr() == True:
             level = 1
             print("button1")
-            worldCurrent.nextLevel(level, game_over,winScreen)
+            worldCurrent.nextLevel(level, game_over)
             game_over = 0
             main_menu = False
         if lvl2.drawStr() == True:
             print("button2")
             level = 2
-            worldCurrent.nextLevel(level, game_over,winScreen)
+            worldCurrent.nextLevel(level, game_over)
             game_over = 0
             main_menu = False
         if lvl3.drawStr() == True:
             print("button3")
             level = 3
-            worldCurrent.nextLevel(level, game_over,winScreen)            
+            worldCurrent.nextLevel(level, game_over)            
             game_over = 0
             main_menu = False
         if lvl4.drawStr() == True:
             print("button4")
             level = 4
-            worldCurrent.nextLevel(level, game_over,winScreen)            
+            worldCurrent.nextLevel(level, game_over)            
             game_over = 0
             main_menu = False
         if lvl5.drawStr() == True:
             print("button5")
             level = 5
-            worldCurrent.nextLevel(level, game_over,winScreen)
+            worldCurrent.nextLevel(level, game_over)
             game_over = 0
             main_menu = False
         
@@ -662,6 +682,8 @@ while run: #runs game
             run = False
         if start_button.draw():
             main_menu = False
+        
+        #main menu text box works same as AskQuestion from pendar class
         colorM = pygame.Color(214,170, 24)
         fnt = pygame.freetype.SysFont("sans", 50)
         #make rectangle to make text stand out
@@ -671,6 +693,7 @@ while run: #runs game
         text_surface = fnt.render("Main Menu", (0, 0, 0))
         screen.blit(text_surface[0], (input_rect.x+5 , input_rect.y+5))
     elif winScreen:
+        #win text box works same as AskQuestion from pendar class
         win_rect = pygame.Rect(screen_height//2-50, screen_width//2, 100, 50)
         pygame.draw.rect(screen, color, win_rect)
         win_surface = font.render("you win!", True, (255, 255, 255))
@@ -704,6 +727,12 @@ while run: #runs game
             spike_group.draw(screen)
             flyer1_group.draw(screen)
             game_over = pendar.askQuestion(screen,game_over)
+            #game over is a global var so it can't easily be accesed in a function cause it will look for a local var by name
+            #of game_over which doesnt exist so the player update function, takes game_over as an input so that the same game_over
+            #can be used as both a local and global variable with respect to the player update function
+            #the update function then returns the game_over variable to allow the global game_over variable to be changed by the 
+            #local game_over var that is created in update function
+            #use similar methods for variabels throught the code
             if A_button.draw() == True:
                 game_over = pendar.guess("a",game_over)
             if B_button.draw() == True:
@@ -715,16 +744,16 @@ while run: #runs game
         if game_over == 2:
             level +=1
             player.reset()
-            game_over = worldCurrent.nextLevel(level, game_over,winScreen)
+            game_over = worldCurrent.nextLevel(level, game_over)
             game_over = 0
+            
+            if level == 6:
+                main_menu = False
+                winScreen = True
       
           
 
-        #game over is a global var so it can't easily be accesed in a function cause it will look for a local var by name
-        #of game_over which doesnt exist so the player update function, takes game_over as an input so that the same game_over
-        #can be used as both a local and global variable with respect to the player update function
-        #the update function then returns the game_over variable to allow the global game_over variable to be changed by the 
-        #local game_over var that is created in update function
+      
         
         
         #game over
