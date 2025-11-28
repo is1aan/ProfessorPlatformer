@@ -486,8 +486,8 @@ world2_data = ([
     [0,0,0,2,0,0,2,0,0,2,0,0,2,0,0,2,0,0,0,0], #19
     [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2], #20
     ],
-    'pendar question',  #pendars question
-    "a"  #answer for pendars question
+    'Which object type is not immutable?-a: tuples-b: dictionaries-c: strings',  #pendars question 2
+    "b"  #answer for pendars question
 )
 
 
@@ -514,7 +514,7 @@ world3_data= ([
   [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], #19 
   [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2]  #20
   ],
-   'boxin question',
+   'Which equation can be used to calculate mass of a substance given pressure, volume, and temperature?-a: Ideal gas law-b: Clausius Clayperon-c: vant hOff',
    "a"
 )
 world4_data= ([
@@ -539,8 +539,8 @@ world4_data= ([
   [0,0,0,0,0,0,3,0,0,0,4,0,0,0,0,0,0,0,0,0], #19 
   [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2]  #20
   ],
-   'boxin question',
-   "a"
+   'What is the effect of increasing pressure on vapor-liquid equilibrium?-a: Boiling point decrease-b: Boiling point increase-c: No change',
+   "b"
 )
 world5_data = ([
   [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2], #1
@@ -564,8 +564,8 @@ world5_data = ([
   [2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2], #19 
   [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2]  #20
   ],
-   'aucoin question',
-   "a"
+   'What is the chemical reaction for making soap?-a: soaponfication-b: acid lypolisis-c: saponification',
+   "c"
 )
 
 #load images
@@ -751,6 +751,7 @@ while run: #runs game
     pygame.display.update()
 
 pygame.quit() #once game loop is turned off the, code after the loop can run; here the game ends
+
 
 
 
