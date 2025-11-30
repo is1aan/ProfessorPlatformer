@@ -17,13 +17,13 @@ tile_size = screen_height/20
 winScreen = False
 game_over = 0
 main_menu = True
-level = 0
+level = 1
 
 font = pygame.font.Font(None, 32)
 color = pygame.Color('chartreuse4')
 
 screen =  pygame.display.set_mode((screen_width, screen_height)) #makes screen
-pygame.display.set_caption('67platformer67')  #name for the screen in the top header bar
+pygame.display.set_caption('Perishing Professors and the Questions of Death')  #name for the screen in the top header bar
 
 class Button():
     def __init__(self,x,y, image = None,option = None,string = None):
